@@ -15,9 +15,16 @@
 <body>
     <form id="form">
         <p>Format: YYYY-MM-DD hh:mm (e.g. 2015-08-09 12:15), <b>must be UTC</b></p>
-        <input type="text" id="start" value="2015-08-24T10:17" />
-        <input type="text" id="end" value="2015-08-24T10:54" />
-        <button>Submit</button>
+        <p>
+            <input type="text" id="start" value="2015-08-24T10:17" />
+            <input type="text" id="end" value="2015-08-24T10:54" />
+            <button>Submit</button>
+        </p>
+        <p>
+            <button type="button" data-offset="1" class="preset">Last hour</button>
+            <button type="button" data-offset="2" class="preset">Last 2 hours</button>
+            <button type="button" data-offset="24" class="preset">Last day</button>
+        </p>
         <p id="error"></p>
     </form>
     <div id="chart"></div>
@@ -25,7 +32,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/4.1.8/highcharts.js"></script>
     <script>
         function fmtDate(d) {
-            return d.replace(' ', 'T') + ':00';
+            // remove millisecond, replace T and remove seconds
+            return d.toISOString().split('.')[0].replace('T', ' ').replace(/...$/, '');
+        }
+
+        function dateAgo(offset) {
+            return new Date(+new Date() - offset * 1000);
         }
 
         function mkChart(times) {
@@ -49,12 +61,13 @@
             });
         }
 
+        var startEl = document.querySelector('#start');
+        var endEl = document.querySelector('#end');
         var errorEl = document.querySelector('#error');
 
-        document.querySelector('#form').addEventListener('submit', function (evt) {
-            evt.preventDefault();
-            var start = fmtDate(document.querySelector('#start').value);
-            var end = fmtDate(document.querySelector('#end').value);
+        function submit() {
+            var start = startEl.value.replace(' ', 'T') + ':00';
+            var end = endEl.value.replace(' ', 'T') + ':00';
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
@@ -69,6 +82,20 @@
             };
             xhr.open('get', '/data?start=' + start + '&end=' + end);
             xhr.send();
+        }
+
+        [].slice.apply(document.querySelectorAll('.preset')).forEach(function (el) {
+            var offset = el.getAttribute('data-offset') * 60 * 60;
+            el.addEventListener('click', function (evt) {
+                startEl.value = fmtDate(dateAgo(offset));
+                endEl.value = fmtDate(new Date());
+                submit();
+            });
+        });
+
+        document.querySelector('#form').addEventListener('submit', function (evt) {
+            submit(start, end);
+            evt.preventDefault();
         });
     </script>
 </body>

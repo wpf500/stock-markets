@@ -52,6 +52,7 @@
 
              new Highcharts.Chart({
                 'chart': { 'renderTo': 'chart', 'type': 'line', 'zoomType': 'x' },
+                'plotOptions': {'line': { 'marker': {'enabled': false }}},
                 'xAxis': { 'type': 'datetime', 'title': { 'text': 'Time' } },
                 'yAxis': { 'title': { 'text': 'Price' } },
                 'title': { 'text': null },

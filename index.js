@@ -15,8 +15,9 @@ app.get('/data', function (req, res) {
     var files = [];
     moment.range(start, end).by('minute', function (date) {
         var p = Q.Promise(function (resolve, reject) {
-            fs.readFile('data/' + date.format('YYYY-MM-DDTHH-mm') + '.json', function (err, buffer) {
-                if (err) reject(err);
+            var fn = 'data/' + date.format('YYYY-MM-DDTHH-mm') + '.json';
+            fs.readFile(fn, function (err, buffer) {
+                if (err) resolve({});
                 else resolve({'date': date.format('YYYY-MM-DDTHH:mm'), 'buffer': buffer});
             });
         });
@@ -24,7 +25,7 @@ app.get('/data', function (req, res) {
     });
 
     Q.all(files).then(function (files) {
-        var dates = files.map(function (file) {
+        var dates = files.filter(function (file) { return file.buffer; }).map(function (file) {
             var data = JSON.parse(file.buffer.toString());
             var indices = data.indices.map(function (index) {
                 return {'name': index.name, 'price': parseFloat(index.value.price.replace(/,/g, ''))};

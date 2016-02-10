@@ -6,11 +6,12 @@ require('moment-range');
 function indices(start, end) {
     var filePromises = [];
     moment.range(start, end).by('minute', function (date) {
+        var dateStr = date.format('YYYY-MM-DDTHH-mm');
         var p = Q.Promise(function (resolve, reject) {
-            var fn = 'data/' + date.format('YYYY-MM-DDTHH-mm') + '.json';
+            var fn = 'data/' + dateStr + '.json';
             fs.readFile(fn, function (err, buffer) {
                 if (err) resolve({});
-                else resolve({'date': date.format('YYYY-MM-DDTHH:mm'), 'buffer': buffer});
+                else resolve({'date': dateStr, 'buffer': buffer});
             });
         });
         filePromises.push(p);
